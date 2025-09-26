@@ -42,8 +42,9 @@ export default function QRGenerator() {
       return;
     }
 
-    const formattedDate = format(date, "dd/MM/yyyy");
-    const finalText = `${code} - ${formattedDate} ${time}`;
+    const formattedDate = format(date, "ddMMyyyy");
+    const formattedTime = time.replace(":", "");
+    const finalText = `${code}${formattedDate}${formattedTime}`;
     setGeneratedText(finalText);
 
     try {
