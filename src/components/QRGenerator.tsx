@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Copy, CheckIcon } from "lucide-react";
+import { CalendarIcon, Copy, CheckIcon, Camera } from "lucide-react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import QRScanner from "./QRScanner";
 
 export default function QRGenerator() {
   const [code, setCode] = useState("");
@@ -22,6 +23,7 @@ export default function QRGenerator() {
   const [generatedText, setGeneratedText] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleGenerate = async () => {
     if (!code.trim()) {
@@ -107,6 +109,15 @@ export default function QRGenerator() {
     }
   };
 
+  const handleScanResult = (scannedCode: string) => {
+    setCode(scannedCode);
+    setShowScanner(false);
+    toast({
+      title: "Código detectado!",
+      description: "QR Code escaneado com sucesso.",
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md mx-auto space-y-8">
@@ -124,12 +135,23 @@ export default function QRGenerator() {
         <Card className="card-modern p-6 space-y-6">
           {/* Code Input */}
           <div className="space-y-2">
-            <Label htmlFor="code" className="text-sm font-medium">
-              Código Completo
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="code" className="text-sm font-medium">
+                Código Completo
+              </Label>
+              <Button
+                onClick={() => setShowScanner(true)}
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs"
+              >
+                <Camera className="h-3 w-3 mr-1" />
+                Escanear
+              </Button>
+            </div>
             <textarea
               id="code"
-              placeholder="Cole aqui o código completo (ex: 23250319614220000214592300569621772171385258|20250926120428|23.40||hash...)"
+              placeholder="Cole aqui o código completo ou use o botão 'Escanear' para ler um QR Code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               className="w-full min-h-[80px] p-3 text-sm font-mono border border-input rounded-lg bg-background resize-y"
@@ -228,6 +250,14 @@ export default function QRGenerator() {
           </div>
         )}
       </div>
+
+      {/* QR Scanner Modal */}
+      {showScanner && (
+        <QRScanner
+          onScanResult={handleScanResult}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 }
