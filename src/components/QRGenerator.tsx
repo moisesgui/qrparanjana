@@ -27,7 +27,7 @@ export default function QRGenerator() {
     if (!code.trim()) {
       toast({
         title: "Erro",
-        description: "Por favor, insira um código numérico.",
+        description: "Por favor, insira o código completo.",
         variant: "destructive",
       });
       return;
@@ -42,9 +42,24 @@ export default function QRGenerator() {
       return;
     }
 
-    const formattedDate = format(date, "ddMMyyyy");
+    // Formato da data e hora: YYYYMMDDHHMM
+    const formattedDate = format(date, "yyyyMMdd");
     const formattedTime = time.replace(":", "");
-    const finalText = `${code}${formattedDate}${formattedTime}`;
+    const dateTimeString = `${formattedDate}${formattedTime}`;
+    
+    // Se o código já tem o formato com |, substitui a data/hora
+    let finalText = code;
+    if (code.includes("|")) {
+      const parts = code.split("|");
+      if (parts.length >= 2) {
+        parts[1] = dateTimeString; // Substitui a segunda parte (índice 1) com a nova data/hora
+        finalText = parts.join("|");
+      }
+    } else {
+      // Se não tem |, adiciona a data/hora
+      finalText = `${code}|${dateTimeString}`;
+    }
+    
     setGeneratedText(finalText);
 
     try {
@@ -101,7 +116,7 @@ export default function QRGenerator() {
             Gerador QR Code
           </h1>
           <p className="text-muted-foreground">
-            Crie QR codes com código e data/hora
+            Atualize a data/hora no código e gere o QR Code
           </p>
         </div>
 
@@ -110,15 +125,15 @@ export default function QRGenerator() {
           {/* Code Input */}
           <div className="space-y-2">
             <Label htmlFor="code" className="text-sm font-medium">
-              Código Numérico
+              Código Completo
             </Label>
-            <Input
+            <textarea
               id="code"
-              type="text"
-              placeholder="Ex: 12345"
+              placeholder="Cole aqui o código completo (ex: 23250319614220000214592300569621772171385258|20250926120428|23.40||hash...)"
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              className="h-12 text-center text-lg font-mono"
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full min-h-[80px] p-3 text-sm font-mono border border-input rounded-lg bg-background resize-y"
+              rows={3}
             />
           </div>
 
@@ -180,7 +195,7 @@ export default function QRGenerator() {
             {/* Generated Text */}
             <Card className="result-container">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-sm flex-1 min-w-0 break-all">
+                <p className="font-mono text-xs flex-1 min-w-0 break-all leading-relaxed">
                   {generatedText}
                 </p>
                 <Button
